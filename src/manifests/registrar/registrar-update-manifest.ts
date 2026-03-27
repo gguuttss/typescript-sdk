@@ -41,10 +41,10 @@ export default async function updateRegistrarMetadataManifest({
     const formattedRegistrarId = formatNonFungibleLocalId(registrarId);
 
     // Build optional parameters using Scrypto Option syntax
-    const nameParam = name !== undefined ? `Some("${name}")` : 'None';
-    const iconUrlParam = iconUrl !== undefined ? `Some("${iconUrl}")` : 'None';
-    const websiteUrlParam = websiteUrl !== undefined ? `Some("${websiteUrl}")` : 'None';
-    const feePercentageParam = feePercentage !== undefined ? `Some(Decimal("${feePercentage}"))` : 'None';
+    const nameParam = name !== undefined ? `Enum<1u8>("${name}")` : 'Enum<0u8>()';
+    const iconUrlParam = iconUrl !== undefined ? `Enum<1u8>("${iconUrl}")` : 'Enum<0u8>()';
+    const websiteUrlParam = websiteUrl !== undefined ? `Enum<1u8>("${websiteUrl}")` : 'Enum<0u8>()';
+    const feePercentageParam = feePercentage !== undefined ? `Enum<1u8>(Decimal("${feePercentage}"))` : 'Enum<0u8>()';
 
     return `
         CALL_METHOD

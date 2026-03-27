@@ -44,19 +44,16 @@ export function validateDomain(domain: string): UtilValidationT {
     if (parts?.[1] !== 'xrd')
         return invalidResult(errors.domain.invalid({ domain, verbose: 'Invalid domain extension.' }));
 
-    if (parts[0].length < 2)
-        return invalidResult(errors.domain.invalid({ domain, verbose: 'Domain name must be 2+ characters in length.' }));
+    const segment = parts[0];
 
-    if (parts[0].length > 65)
+    if (segment.length < 1)
+        return invalidResult(errors.domain.invalid({ domain, verbose: 'Domain name must be at least 1 character.' }));
+
+    if (segment.length > 65)
         return invalidResult(errors.domain.invalid({ domain, verbose: 'Max domain length is 65 characters.' }));
 
-    if (domain.includes('_'))
-        return invalidResult(errors.domain.invalid({ domain, verbose: 'Special characters are not permitted (except for hyphens).' }));
-
-    const domainFormatRegex = /^(([a-zA-Z0-9]{2,})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.xrd$/;
-
-    if (domainFormatRegex.test(domain) === false)
-        return invalidResult(errors.domain.invalid({ domain, verbose: 'Domain name format is incorrect.' }));
+    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/.test(segment))
+        return invalidResult(errors.domain.invalid({ domain, verbose: 'Domain must contain only lowercase letters, numbers, and hyphens. Cannot start or end with a hyphen.' }));
 
 
     return validResult();

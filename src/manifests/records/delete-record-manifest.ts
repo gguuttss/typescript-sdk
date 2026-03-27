@@ -19,6 +19,7 @@ export function deleteRecordManifest({
     accountAddress,
     domainId,
     subregistryAddress,
+    subdomainName,
     context,
     directive
 }: {
@@ -26,9 +27,14 @@ export function deleteRecordManifest({
     accountAddress: string;
     domainId: string;
     subregistryAddress: string;
+    subdomainName?: string;
     context: string;
     directive: string;
 }): string {
+
+    const subdomainParam = subdomainName
+        ? `Enum<1u8>("${subdomainName}")`
+        : 'Enum<0u8>()';
 
     return `
         CALL_METHOD
@@ -44,6 +50,7 @@ export function deleteRecordManifest({
             Address("${subregistryAddress}")
             "delete_record"
             Proof("domain_proof")
+            ${subdomainParam}
             "${context}"
             "${directive}";
         DROP_ALL_PROOFS;

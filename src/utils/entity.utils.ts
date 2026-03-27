@@ -87,9 +87,13 @@ async function expandRNSCore(
         const dappDefinition = parseField(componentState, "dapp_definition", parseComponentAddress);
         const isRegistrationActive = parseField(componentState, "is_registration_active", parseBoolean) ?? false;
 
-        // Price ladder (HashMap<i64, Decimal>)
-        // For now, return empty object - can be parsed later if needed
-        const priceLadder: Record<string, string> = {};
+        // Price ladder - hardcoded in the contract (calculate_domain_price in utils.rs)
+        const priceLadder: Record<string, string> = {
+            '1': '2250',
+            '2': '240',
+            '3': '120',
+            '4': '40',
+        };
 
         // Subregistry metadata templates using SBOR parsers
         const subregistryConfig = {

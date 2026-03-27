@@ -2,6 +2,7 @@ import transferDomainManifest from "../../manifests/domains/transfer-domain-mani
 
 import { sendTransaction } from "../../utils/transaction.utils";
 import { transactionError, transactionResponse } from "../../utils/response.utils";
+import { validateDomainOwnership, isValidationError } from "../../utils/validation.utils";
 import errors from "../../mappings/errors";
 
 import { TransferDispatcherPropsI } from "../../common/dispatcher.types";
@@ -9,10 +10,10 @@ import { SdkTransactionResponseT, TransactionFeedbackStackI } from "../../common
 
 /**
  * Domain Transfer Dispatcher
- * 
+ *
  * Transfers a domain NFT to a new owner.
  * Optionally spawns a new subregistry for a clean transfer (empty records/subdomains).
- * 
+ *
  * @param sdkInstance - RNS SDK instance
  * @param domain - Domain name to transfer
  * @param rdt - Radix dApp Toolkit instance
@@ -35,15 +36,29 @@ export async function dispatchDomainTransfer({
     try {
         const cleanTransfer = preferences?.cleanTransfer ?? false;
 
+        const validation = await validateDomainOwnership({
+            domain,
+            accountAddress: fromAddress,
+            sdkInstance,
+            requireSubregistry: false,
+            errorFactory: errors.transfer
+        });
+
+        if (isValidationError(validation)) {
+            return validation.error;
+        }
+
+        const { domainDetails } = validation;
+
         const manifest = await transferDomainManifest({
             sdkInstance,
-            domain,
+            domainId: domainDetails.id,
             fromAddress,
             destinationAddress,
             cleanTransfer
         });
 
-        const transferMessage = cleanTransfer 
+        const transferMessage = cleanTransfer
             ? `Transfer ${domain} (clean slate)`
             : `Transfer ${domain}`;
 

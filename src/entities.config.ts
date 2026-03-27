@@ -15,8 +15,7 @@ const config: EntitiesConfigT = {
     },
 
     mainnet: {
-        // Note: mainnet component address can be added upon any deployment (upon which you should fork this repo and deploy your own SDK instance)
-        rnsCore: null
+        rnsCore: "component_rdx1cz2y8386y6hkxm06c48cyjqf7vlx6n8jeqx4dezr6vfavhk2j3lr8c"
     }
 
 };

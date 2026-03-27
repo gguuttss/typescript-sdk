@@ -198,38 +198,38 @@ async function formatDomainList(
         .map(r => {
             if (r.data?.programmatic_json.kind === 'Tuple') {
                 const domainData = (r.data.programmatic_json as ProgrammaticScryptoSborValueTuple).fields.reduce((acc, field) => {
+                    const fieldVal = (field as any).value;
+
                     // String fields: name, key_image_url
                     if (field.kind === 'String' && field.field_name) {
-                        return { ...acc, [field.field_name]: field.value };
+                        return { ...acc, [field.field_name]: fieldVal };
                     }
 
                     // Decimal fields: bond_amount (store temporarily with _ prefix)
                     if (field.kind === 'Decimal' && field.field_name === 'bond_amount') {
-                        return { ...acc, _bond_amount: field.value };
+                        return { ...acc, _bond_amount: fieldVal };
                     }
 
-                    // Resource address: bond_resource (store temporarily with _ prefix)
-                    if (field.kind === 'Reference' && field.field_name === 'bond_resource') {
-                        return { ...acc, _bond_resource: field.value };
+                    // Resource address: bond_resource
+                    if (field.field_name === 'bond_resource' && fieldVal) {
+                        return { ...acc, _bond_resource: fieldVal };
                     }
 
                     // Component address: subregistry_component_address
-                    if (field.kind === 'Reference' && field.field_name === 'subregistry_component_address') {
-                        return { ...acc, subregistry_component_address: field.value };
+                    if (field.field_name === 'subregistry_component_address' && fieldVal) {
+                        return { ...acc, subregistry_component_address: fieldVal };
                     }
 
                     // Timestamp: created_timestamp (I64 in seconds, convert to ms)
                     if (field.field_name === 'created_timestamp' && field.kind === 'I64') {
-                        return { ...acc, created_timestamp: parseInt(field.value) * 1000 };
+                        return { ...acc, created_timestamp: parseInt(fieldVal) * 1000 };
                     }
 
                     // Option<ComponentAddress>: current_activated_owner
                     if (field.field_name === 'current_activated_owner' && field.kind === 'Enum') {
                         if (field.variant_name === 'Some' && field.fields?.length > 0) {
                             const ownerField = field.fields[0];
-                            if (ownerField.kind === 'Reference') {
-                                return { ...acc, current_activated_owner: ownerField.value };
-                            }
+                            return { ...acc, current_activated_owner: (ownerField as any).value ?? null };
                         }
                         return { ...acc, current_activated_owner: null };
                     }
@@ -238,9 +238,7 @@ async function formatDomainList(
                     if (field.field_name === 'issuer_registrar_id' && field.kind === 'Enum') {
                         if (field.variant_name === 'Some' && field.fields?.length > 0) {
                             const registrarField = field.fields[0];
-                            if (registrarField.kind === 'NonFungibleLocalId') {
-                                return { ...acc, issuer_registrar_id: registrarField.value };
-                            }
+                            return { ...acc, issuer_registrar_id: (registrarField as any).value ?? null };
                         }
                         return { ...acc, issuer_registrar_id: null };
                     }
@@ -477,39 +475,41 @@ export async function requestDomainDetails(
 
         if (!nftData) return null;
 
-        const parsedData = (nftData.data?.programmatic_json as ProgrammaticScryptoSborValueTuple).fields.reduce((acc, field) => {
+        const fields = (nftData.data?.programmatic_json as ProgrammaticScryptoSborValueTuple).fields;
+
+        const parsedData = fields.reduce((acc, field) => {
+            const fieldVal = (field as any).value;
+
             // String fields
             if (field.kind === 'String' && field.field_name) {
-                return { ...acc, [field.field_name]: field.value };
+                return { ...acc, [field.field_name]: fieldVal };
             }
 
             // Decimal: bond_amount (temporary)
             if (field.kind === 'Decimal' && field.field_name === 'bond_amount') {
-                return { ...acc, _bond_amount: field.value };
+                return { ...acc, _bond_amount: fieldVal };
             }
 
             // Resource address: bond_resource (temporary)
-            if (field.kind === 'Reference' && field.field_name === 'bond_resource') {
-                return { ...acc, _bond_resource: field.value };
+            if (field.field_name === 'bond_resource' && fieldVal) {
+                return { ...acc, _bond_resource: fieldVal };
             }
 
             // Component address: subregistry_component_address
-            if (field.kind === 'Reference' && field.field_name === 'subregistry_component_address') {
-                return { ...acc, subregistry_component_address: field.value };
+            if (field.field_name === 'subregistry_component_address' && fieldVal) {
+                return { ...acc, subregistry_component_address: fieldVal };
             }
 
             // Timestamp (I64 in seconds, convert to ms)
             if (field.field_name === 'created_timestamp' && field.kind === 'I64') {
-                return { ...acc, created_timestamp: parseInt(field.value) * 1000 };
+                return { ...acc, created_timestamp: parseInt(fieldVal) * 1000 };
             }
 
             // Option<ComponentAddress>: current_activated_owner
             if (field.field_name === 'current_activated_owner' && field.kind === 'Enum') {
                 if (field.variant_name === 'Some' && field.fields?.length > 0) {
                     const ownerField = field.fields[0];
-                    if (ownerField.kind === 'Reference') {
-                        return { ...acc, current_activated_owner: ownerField.value };
-                    }
+                    return { ...acc, current_activated_owner: (ownerField as any).value ?? null };
                 }
                 return { ...acc, current_activated_owner: null };
             }
@@ -518,9 +518,7 @@ export async function requestDomainDetails(
             if (field.field_name === 'issuer_registrar_id' && field.kind === 'Enum') {
                 if (field.variant_name === 'Some' && field.fields?.length > 0) {
                     const registrarField = field.fields[0];
-                    if (registrarField.kind === 'NonFungibleLocalId') {
-                        return { ...acc, issuer_registrar_id: registrarField.value };
-                    }
+                    return { ...acc, issuer_registrar_id: (registrarField as any).value ?? null };
                 }
                 return { ...acc, issuer_registrar_id: null };
             }
@@ -708,7 +706,7 @@ export async function requestSubdomainDetails(
         return parseSubdomainRecord(subdomainRecord, rootDomainData);
     } catch (e) {
         logger.error("requestSubdomainDetails", e);
-        return e;
+        return e instanceof Error ? e : new Error(String(e));
     }
 }
 

@@ -2,12 +2,12 @@ import NamespaceSDK from "../..";
 
 /**
  * Domain Transfer Manifest
- * 
+ *
  * Generates a manifest to transfer a domain NFT to a new owner.
  * Optionally spawns a new subregistry for a clean transfer.
- * 
+ *
  * @param sdkInstance - RNS SDK instance
- * @param domain - Domain name (used to get domain ID)
+ * @param domainId - Domain NFT ID (NonFungibleLocalId)
  * @param fromAddress - Current owner's account address
  * @param destinationAddress - New owner's account address
  * @param cleanTransfer - Whether to spawn new subregistry before transfer
@@ -15,13 +15,13 @@ import NamespaceSDK from "../..";
  */
 export default async function transferDomainManifest({
     sdkInstance,
-    domain,
+    domainId,
     fromAddress,
     destinationAddress,
     cleanTransfer,
 }: {
     sdkInstance: NamespaceSDK;
-    domain: string;
+    domainId: string;
     fromAddress: string;
     destinationAddress: string;
     cleanTransfer: boolean;
@@ -39,7 +39,7 @@ export default async function transferDomainManifest({
             "create_proof_of_non_fungibles"
             Address("${domainResourceAddress}")
             Array<NonFungibleLocalId>(
-                NonFungibleLocalId("${domain}")
+                NonFungibleLocalId("${domainId}")
             );
         POP_FROM_AUTH_ZONE
             Proof("domain_proof");
@@ -57,13 +57,13 @@ export default async function transferDomainManifest({
             "withdraw_non_fungibles"
             Address("${domainResourceAddress}")
             Array<NonFungibleLocalId>(
-                NonFungibleLocalId("${domain}")
+                NonFungibleLocalId("${domainId}")
             );
         CALL_METHOD
             Address("${destinationAddress}")
             "try_deposit_batch_or_refund"
             Expression("ENTIRE_WORKTOP")
-            None;
+            Enum<0u8>();
     `;
 
     return manifest;

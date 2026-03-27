@@ -38,7 +38,7 @@ export async function dispatchCreateRecords({
             }));
         }
 
-        const isSubdomain = sdkInstance.utils.isSubdomain(domainDetails.name);
+        const isSubdomain = 'root_domain' in domainDetails && !!(domainDetails as SubDomainDataI).root_domain;
 
         let domainId: string;
         let subregistryAddress: string;

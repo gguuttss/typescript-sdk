@@ -32,7 +32,7 @@ export async function dispatchRecordCreation({
 }: CreateRecordDispatcherPropsI): Promise<SdkTransactionResponseT<TransactionFeedbackStackI>> {
 
     try {
-        const isSubdomain = sdkInstance.utils.isSubdomain(domainDetails.name);
+        const isSubdomain = 'root_domain' in domainDetails && !!(domainDetails as SubDomainDataI).root_domain;
 
         let domainId: string;
         let subregistryAddress: string;
@@ -51,9 +51,9 @@ export async function dispatchRecordCreation({
         }
 
         if (!subregistryAddress) {
-            return transactionError(errors.record.creation({ 
-                docket, 
-                verbose: "Domain does not have a subregistry component address" 
+            return transactionError(errors.record.creation({
+                docket,
+                verbose: `Domain does not have a subregistry component address. Keys: ${Object.keys(domainDetails).join(', ')}`
             }));
         }
 

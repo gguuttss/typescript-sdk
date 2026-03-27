@@ -45,8 +45,8 @@ export default async function setPrimaryDomainManifest({
             "set_primary_domain"
             Proof("domain_proof")
             "${domainName}"
-            Address("${accountAddress}")
-            ${enableDiscovery};
+            ${enableDiscovery}
+            Address("${accountAddress}");
         CALL_METHOD
             Address("${accountAddress}")
             "deposit_batch"

@@ -32,15 +32,17 @@ export async function dispatchRecordDeletion({
 }: DeleteRecordDispatcherPropsI): Promise<SdkTransactionResponseT<TransactionFeedbackStackI>> {
 
     try {
-        const isSubdomain = sdkInstance.utils.isSubdomain(domainDetails.name);
+        const isSubdomain = 'root_domain' in domainDetails && !!(domainDetails as SubDomainDataI).root_domain;
 
         let domainId: string;
         let subregistryAddress: string;
+        let subdomainName: string | undefined;
 
         if (isSubdomain) {
             const subdomainDetails = domainDetails as SubDomainDataI;
             domainId = subdomainDetails.root_domain.id;
             subregistryAddress = subdomainDetails.root_domain.subregistry_component_address;
+            subdomainName = subdomainDetails.name;
         } else {
             const rootDomainDetails = domainDetails as DomainDataI;
             domainId = rootDomainDetails.id;
@@ -48,16 +50,16 @@ export async function dispatchRecordDeletion({
         }
 
         if (!subregistryAddress) {
-            return transactionError(errors.record.deletion({ 
-                docket, 
-                verbose: "Domain does not have a subregistry component address" 
+            return transactionError(errors.record.deletion({
+                docket,
+                verbose: "Domain does not have a subregistry component address"
             }));
         }
 
         if (!docket.directive) {
-            return transactionError(errors.record.deletion({ 
-                docket, 
-                verbose: "Directive is required for record deletion" 
+            return transactionError(errors.record.deletion({
+                docket,
+                verbose: "Directive is required for record deletion"
             }));
         }
 
@@ -66,6 +68,7 @@ export async function dispatchRecordDeletion({
             accountAddress,
             domainId,
             subregistryAddress,
+            subdomainName,
             context: docket.context,
             directive: docket.directive
         });
@@ -124,15 +127,17 @@ export async function dispatchRecordDeletionById({
             }));
         }
 
-        const isSubdomain = sdkInstance.utils.isSubdomain(domainDetails.name);
+        const isSubdomain = 'root_domain' in domainDetails && !!(domainDetails as SubDomainDataI).root_domain;
 
         let domainId: string;
         let subregistryAddress: string;
+        let subdomainName: string | undefined;
 
         if (isSubdomain) {
             const subdomainDetails = domainDetails as SubDomainDataI;
             domainId = subdomainDetails.root_domain.id;
             subregistryAddress = subdomainDetails.root_domain.subregistry_component_address;
+            subdomainName = subdomainDetails.name;
         } else {
             const rootDomainDetails = domainDetails as DomainDataI;
             domainId = rootDomainDetails.id;
@@ -140,9 +145,9 @@ export async function dispatchRecordDeletionById({
         }
 
         if (!subregistryAddress) {
-            return transactionError(errors.record.deletionById({ 
-                recordId, 
-                verbose: "Domain does not have a subregistry component address" 
+            return transactionError(errors.record.deletionById({
+                recordId,
+                verbose: "Domain does not have a subregistry component address"
             }));
         }
 
@@ -151,6 +156,7 @@ export async function dispatchRecordDeletionById({
             accountAddress,
             domainId,
             subregistryAddress,
+            subdomainName,
             context,
             directive
         });
